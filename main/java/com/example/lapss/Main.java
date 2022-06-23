@@ -80,6 +80,8 @@ public class Main extends Application {
 
     TableView<Laptop> table;
     int toggle = 0;
+    boolean toggleMethod = false;
+
 
     TextField tfName = new TextField();
     TextField tfImg = new TextField();
@@ -91,11 +93,11 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws IOException {
 
-
-
-
         VBox root = new VBox();
         VBox laptopRoot = new VBox();
+        VBox metherdBox = new VBox();
+        VBox emptyStage = new VBox();
+
 
         HBox headerBox = new HBox();
         Label nameHead = new Label("Name" );
@@ -107,8 +109,7 @@ public class Main extends Application {
         headerBox.setSpacing(42);
 
 
-        HBox inputLaptop = new HBox();
-
+        VBox inputLaptop = new VBox();
 
         Button btnAdd = new Button("Add product");
         btnAdd.setOnAction(new EventHandler<ActionEvent>() {
@@ -129,10 +130,7 @@ public class Main extends Application {
             public void handle(ActionEvent actionEvent) {
 
                 root.getChildren().remove(btnStopSearch);
-
                 renderLaps(laptopRoot, connection);
-
-
 
             }
         });
@@ -143,17 +141,28 @@ public class Main extends Application {
             public void handle(ActionEvent actionEvent) {
 
                 String proviso = tfName.getText();
-                System.out.println(proviso);
-
                 root.getChildren().addAll(btnStopSearch);
-
                 renderLaps(laptopRoot, connection, proviso);
             }
         });
 
+        Button btnOpenMetherdBox = new Button("Open Metherd Box");
+        btnOpenMetherdBox.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
 
+                if(toggleMethod){
+                    toggleMethod = false ;
+                    btnOpenMetherdBox.setText("Open Metherd Box");
+                    emptyStage.getChildren().remove(metherdBox);
+                } else {
+                    toggleMethod = true;
+                    btnOpenMetherdBox.setText("Close");
+                    emptyStage.getChildren().addAll(metherdBox);
 
-
+                }
+            }
+        });
 
 //
 //        TableColumn<Laptop, Integer> idColumn = new TableColumn<>("ID");
@@ -186,7 +195,9 @@ public class Main extends Application {
 //        }
 
         inputLaptop.getChildren().addAll(tfName,tfImg,tfPrice,tfCompany,btnAdd);
-        root.getChildren().addAll(btnSearch,headerBox,inputLaptop, laptopRoot);
+
+        metherdBox.getChildren().addAll(btnSearch,inputLaptop);
+        root.getChildren().addAll(btnOpenMetherdBox,emptyStage,headerBox, laptopRoot);
         renderLaps(laptopRoot,  connection);
 
 
@@ -211,9 +222,6 @@ public class Main extends Application {
         System.out.println(sql);
         connection.querryDB(sql);
     }
-
-
-
     void displayLaps(DBConn connection, VBox root, List<Laptop> laptopList) {
         root.getChildren().clear();
         for (int i = 0; i < laptopList.size(); i++) {
@@ -227,50 +235,31 @@ public class Main extends Application {
             ImageView imageView = new ImageView(image);
             imageView.setFitWidth(220);
             imageView.setPreserveRatio(true);
+            Label lbPrice = new Label("" + laptopList.get(index).getPrice());
             Label lbCompany= new Label("" + laptopList.get(index).getCompany());
 
-            Label lbPrice = new Label("" + laptopList.get(index).getPrice());
-
-
             Button btnDelete = new Button("Delete");
-
             btnDelete.setOnAction(actionEvent -> {
                 System.out.println("Click delete " + laptopList.get(index).getId());
-
                 toggle = 0;
-
                 connection.querryDB("DELETE  FROM `laptops` WHERE id = " + laptopList.get(index).getId());
                 renderLaps(root, connection);
             });
 
             Button btnUpdate = new Button("Update");
-
             btnUpdate.setOnAction(actionEvent -> {
-
-
 
                 if(toggle  == 0 ){
                     btnUpdate.setText("ok");
-                    System.out.println(toggle);
                     toggle = laptopList.get(index).getId();
                     beforeUpdate(laptopList.get(index).getId());
                 } else if(toggle == laptopList.get(index).getId()) {
-                    btnUpdate.setText("Update");
-
-                    System.out.println(toggle);
                     toggle = 0;
                     update(laptopList.get(index).getId());
                     renderLaps(root, connection);
                 }
-
-
                 System.out.println("Click update" + laptopList.get(index).getId());
-
-//                connection.querryDB("DELETE  FROM `laptops` WHERE id = " + laptopList.get(index).getId());
-//                renderLaps(root, connection);
             });
-
-
 
             laptopstBox.setSpacing(42);
             laptopstBox.getChildren().addAll(lbId, lbName, lbImg,imageView, lbPrice,lbCompany, btnDelete, btnUpdate);
