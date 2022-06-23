@@ -17,6 +17,7 @@ import javafx.scene.layout.VBox;
 
 //import java.awt.Label;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 //import jdk.internal.icu.impl.CharacterIteratorWrapper;
@@ -73,16 +74,11 @@ import java.util.List;
 //    void aaaa(){
 //      }
 
-
 public class Main extends Application {
-
-
 
     TableView<Laptop> table;
     int toggle = 0;
     boolean toggleMethod = false;
-
-
     TextField tfName = new TextField();
     TextField tfImg = new TextField();
     TextField tfPrice = new TextField();
@@ -97,7 +93,9 @@ public class Main extends Application {
 
         VBox root = new VBox();
         VBox laptopRoot = new VBox();
-        VBox metherdBox = new VBox();
+        VBox methodBox = new VBox();
+        HBox btnsMethodBox = new HBox();
+
 
 
         HBox headerBox = new HBox();
@@ -110,7 +108,6 @@ public class Main extends Application {
         headerBox.setSpacing(42);
 
 
-
         Button btnAdd = new Button("Add product");
         btnAdd.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -120,7 +117,7 @@ public class Main extends Application {
                 String sql = "INSERT INTO `laptops`(`name`, `img`, `price`,`company`) VALUES ('"+ tfName.getText()+"','"+ tfImg.getText()+"',"+ tfPrice.getText()+",'" + tfCompany.getText()+"')";
                 connection.querryDB(sql);
 
-                renderLaps(laptopRoot, connection);
+                displayLaps(laptopRoot, getAlldata());
             }
         });
 
@@ -130,7 +127,8 @@ public class Main extends Application {
             public void handle(ActionEvent actionEvent) {
 
                 root.getChildren().remove(btnStopSearch);
-                renderLaps(laptopRoot, connection);
+                displayLaps(laptopRoot,getAlldata());
+
 
             }
         });
@@ -141,8 +139,14 @@ public class Main extends Application {
             public void handle(ActionEvent actionEvent) {
 
                 String proviso = tfName.getText();
-                root.getChildren().addAll(btnStopSearch);
-                renderLaps(laptopRoot, connection, proviso);
+
+                displayLaps(laptopRoot, searchName(proviso));
+                if(!root.getChildren().contains(btnStopSearch)){
+                    root.getChildren().addAll(btnStopSearch);
+
+                }
+
+
             }
         });
 
@@ -154,17 +158,17 @@ public class Main extends Application {
                 if(toggleMethod){
                     toggleMethod = false ;
                     btnOpenMetherdBox.setText("Open Metherd Box");
-                    metherdBox.getChildren().removeAll(btnSearch,btnAdd,inputLaptop);
+                    methodBox.getChildren().removeAll(btnsMethodBox,inputLaptop);
 
 
-                    emptyStage.getChildren().remove(metherdBox);
+                    emptyStage.getChildren().remove(methodBox);
                 } else {
                     toggleMethod = true;
                     btnOpenMetherdBox.setText("Close");
-                    metherdBox.getChildren().addAll(btnSearch,btnAdd,inputLaptop);
+                    methodBox.getChildren().addAll(btnsMethodBox,inputLaptop);
 
 
-                    emptyStage.getChildren().addAll(metherdBox);
+                    emptyStage.getChildren().addAll(methodBox);
 
                 }
             }
@@ -200,10 +204,11 @@ public class Main extends Application {
 //            return laps;
 //        }
 
+        btnsMethodBox.getChildren().addAll(btnSearch,btnAdd);
         inputLaptop.getChildren().addAll(tfName,tfImg,tfPrice,tfCompany);
 
         root.getChildren().addAll(btnOpenMetherdBox,emptyStage,headerBox, laptopRoot);
-        renderLaps(laptopRoot,  connection);
+        getData(laptopRoot,  connection);
 
 
         Scene scene = new Scene(root, 600, 400);
@@ -211,9 +216,6 @@ public class Main extends Application {
         stage.setScene(scene);
         stage.show();
     }
-
-
-
     void beforeUpdate(int id){
         Laptop a = connection.getLaps(id);
 
@@ -227,7 +229,7 @@ public class Main extends Application {
         System.out.println(sql);
         connection.querryDB(sql);
     }
-    void displayLaps(DBConn connection, VBox root, List<Laptop> laptopList) {
+    void displayLaps( VBox root, List<Laptop> laptopList) {
         root.getChildren().clear();
         for (int i = 0; i < laptopList.size(); i++) {
             int index = i;
@@ -248,7 +250,7 @@ public class Main extends Application {
                 System.out.println("Click delete " + laptopList.get(index).getId());
                 toggle = 0;
                 connection.querryDB("DELETE  FROM `laptops` WHERE id = " + laptopList.get(index).getId());
-                renderLaps(root, connection);
+                displayLaps(root,getAlldata());
             });
 
             Button btnUpdate = new Button("Update");
@@ -260,14 +262,12 @@ public class Main extends Application {
                     beforeUpdate(laptopList.get(index).getId());
                     emptyStage.getChildren().addAll(inputLaptop);
 
-
-
                 } else if(toggle == laptopList.get(index).getId()) {
                     toggle = 0;
                     update(laptopList.get(index).getId());
                     emptyStage.getChildren().remove(inputLaptop);
+                    displayLaps(root,getAlldata());
 
-                    renderLaps(root, connection);
                 }
                 System.out.println("Click update" + laptopList.get(index).getId());
             });
@@ -278,18 +278,58 @@ public class Main extends Application {
         }
     }
 
-    void displayLaps(DBConn connection, VBox root, List<Laptop> laptopList, String proviso) {
+    // display(list)
+    // getData() return data;
+    // search(keyword) return data;
+
+    private List<Laptop> searchName(String name){
+        List<Laptop> laptopList = connection.getLaps();
+        ArrayList<Laptop> laptops = new ArrayList<> ();
+
+        for (int i = 0; i < laptopList.size(); i++) {
+            if(laptopList.get(i).getName().equals(name)){
+                laptops.add(laptopList.get(i));
+            }
+        }
+        return  laptops;
+    }
+
+    private List<Laptop> searchCompany(String company){
+        List<Laptop> laptopList = connection.getLaps();
+        ArrayList<Laptop> laptops = new ArrayList<> ();
+
+        for (int i = 0; i < laptopList.size(); i++) {
+            if(laptopList.get(i).getCompany().equals(company)){
+                laptops.add(laptopList.get(i));
+            }
+        }
+        return  laptops;
+    }
+
+    private List<Laptop> searchPrice(float x, float y){
+        List<Laptop> laptopList = connection.getLaps();
+        ArrayList<Laptop> laptops = new ArrayList<> ();
+
+        for (int i = 0; i < laptopList.size(); i++) {
+            if(laptopList.get(i).getPrice() >= x && laptopList.get(i).getPrice() <= x ){
+                laptops.add(laptopList.get(i));
+            }
+        }
+        return  laptops;
+    }
+
+    void displayLaps(DBConn connection, VBox root, List<Laptop> laptopList, String key) { // dùng để tìm product theo tên(dùng đa hình mà đa hình cùi bắp :v)
         root.getChildren().clear();
         for (int i = 0; i < laptopList.size(); i++) {
 
             int index = i;
             System.out.println(laptopList.get(index).getName());
-            System.out.println(proviso);
-            System.out.println(""+laptopList.get(index).getName().equals(proviso));
+            System.out.println(key);
+            System.out.println(""+laptopList.get(index).getName().equals(key));
 
             String name = ""+laptopList.get(index).getName();
 
-            if(name.equals(proviso)){
+            if(name.equals(key)){
                 HBox laptopstBox = new HBox();
                 Label lbId = new Label("" + laptopList.get(index).getId());
                 Label lbName = new Label(laptopList.get(index).getName());
@@ -308,7 +348,7 @@ public class Main extends Application {
                     System.out.println("Click delete " + laptopList.get(index).getId());
 
                     connection.querryDB("DELETE  FROM `laptops` WHERE id = " + laptopList.get(index).getId());
-                    renderLaps(root, connection);
+                    getData(root, connection);
                 });
 
                 laptopstBox.setSpacing(42);
@@ -319,19 +359,28 @@ public class Main extends Application {
         }
     }
 
-
-    private void renderLaps(VBox root, DBConn connection){
-        List<Laptop> products = connection.getLaps();
-        displayLaps(connection, root, products);
+    public List<Laptop> getdatatata(String sql){
+        List<Laptop> data = null;
+        data = connection.getdatabase(sql);
+        return data;
     }
-    private void renderLaps(VBox root, DBConn connection, String proviso){
+
+    public List<Laptop> getAlldata(){
+        List<Laptop> data = null;
+        String sql = "SELECT * FROM `laptops`";
+        data = connection.getdatabase(sql);
+        return data;
+    }
+    private void getData(VBox root, DBConn connection){
+        String sql = "SELECT * FROM `laptops`";
+        List<Laptop> products = getdatatata(sql);
+        displayLaps( root, products);
+    }
+    private void getData(VBox root, DBConn connection, String proviso){
         List<Laptop> products = connection.getLaps();
         displayLaps(connection, root, products, proviso);
         System.out.println(proviso);
     }
-
-
-
     public static void main(String[] args) {
         launch();
     }

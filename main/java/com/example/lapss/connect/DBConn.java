@@ -100,6 +100,28 @@ public class DBConn {
     }
 
 
+    public List<Laptop> getdatabase(String sql){
+        ArrayList<Laptop> laptop = new ArrayList<>();
+        try {
+            ResultSet resul = connection.prepareStatement(sql).executeQuery();
+            while (resul.next()){
+                int id = resul.getInt("id");
+                String name = resul.getString("name");
+                String img = resul.getString("img");
+                String company = resul.getString("company");
+                float price = resul.getFloat("price");
+
+                laptop.add(new Laptop(id , price,name,img,company));
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+
+        return laptop;
+
+    }
+
+
     public void querryDB(String sql){
         try {
             System .out.println(sql);
