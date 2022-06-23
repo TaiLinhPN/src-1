@@ -88,6 +88,8 @@ public class Main extends Application {
     TextField tfPrice = new TextField();
     TextField tfCompany = new TextField();
     DBConn connection = new DBConn();
+    VBox emptyStage = new VBox();
+    VBox inputLaptop = new VBox();
 
 
     @Override
@@ -96,7 +98,6 @@ public class Main extends Application {
         VBox root = new VBox();
         VBox laptopRoot = new VBox();
         VBox metherdBox = new VBox();
-        VBox emptyStage = new VBox();
 
 
         HBox headerBox = new HBox();
@@ -109,7 +110,6 @@ public class Main extends Application {
         headerBox.setSpacing(42);
 
 
-        VBox inputLaptop = new VBox();
 
         Button btnAdd = new Button("Add product");
         btnAdd.setOnAction(new EventHandler<ActionEvent>() {
@@ -154,10 +154,16 @@ public class Main extends Application {
                 if(toggleMethod){
                     toggleMethod = false ;
                     btnOpenMetherdBox.setText("Open Metherd Box");
+                    metherdBox.getChildren().removeAll(btnSearch,btnAdd,inputLaptop);
+
+
                     emptyStage.getChildren().remove(metherdBox);
                 } else {
                     toggleMethod = true;
                     btnOpenMetherdBox.setText("Close");
+                    metherdBox.getChildren().addAll(btnSearch,btnAdd,inputLaptop);
+
+
                     emptyStage.getChildren().addAll(metherdBox);
 
                 }
@@ -194,9 +200,8 @@ public class Main extends Application {
 //            return laps;
 //        }
 
-        inputLaptop.getChildren().addAll(tfName,tfImg,tfPrice,tfCompany,btnAdd);
+        inputLaptop.getChildren().addAll(tfName,tfImg,tfPrice,tfCompany);
 
-        metherdBox.getChildren().addAll(btnSearch,inputLaptop);
         root.getChildren().addAll(btnOpenMetherdBox,emptyStage,headerBox, laptopRoot);
         renderLaps(laptopRoot,  connection);
 
@@ -210,7 +215,7 @@ public class Main extends Application {
 
 
     void beforeUpdate(int id){
-        Laptop a = connection.getLaps(13);
+        Laptop a = connection.getLaps(id);
 
         tfName.setText(a.getName());
         tfImg.setText(a.getImg());
@@ -253,9 +258,15 @@ public class Main extends Application {
                     btnUpdate.setText("ok");
                     toggle = laptopList.get(index).getId();
                     beforeUpdate(laptopList.get(index).getId());
+                    emptyStage.getChildren().addAll(inputLaptop);
+
+
+
                 } else if(toggle == laptopList.get(index).getId()) {
                     toggle = 0;
                     update(laptopList.get(index).getId());
+                    emptyStage.getChildren().remove(inputLaptop);
+
                     renderLaps(root, connection);
                 }
                 System.out.println("Click update" + laptopList.get(index).getId());
