@@ -1,14 +1,9 @@
 package com.example.lapss;
 
 import com.example.lapss.connect.DBConn;
-import com.example.lapss.connect.HandleLaptop;
 import com.example.lapss.objects.Laptop;
-import com.example.lapss.objects.UserAccount;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
@@ -19,10 +14,9 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+
+//import java.awt.Label;
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 //import jdk.internal.icu.impl.CharacterIteratorWrapper;
@@ -87,10 +81,19 @@ public class Main extends Application {
     TableView<Laptop> table;
     int toggle = 0;
 
+    TextField tfName = new TextField();
+    TextField tfImg = new TextField();
+    TextField tfPrice = new TextField();
+    TextField tfCompany = new TextField();
+    DBConn connection = new DBConn();
+
+
     @Override
     public void start(Stage stage) throws IOException {
 
-        DBConn connection = new DBConn();
+
+
+
         VBox root = new VBox();
         VBox laptopRoot = new VBox();
 
@@ -105,10 +108,7 @@ public class Main extends Application {
 
 
         HBox inputLaptop = new HBox();
-        TextField tfName = new TextField();
-        TextField tfImg = new TextField();
-        TextField tfPrice = new TextField();
-        TextField tfCompany = new TextField();
+
 
         Button btnAdd = new Button("Add product");
         btnAdd.setOnAction(new EventHandler<ActionEvent>() {
@@ -185,7 +185,6 @@ public class Main extends Application {
 //            return laps;
 //        }
 
-
         inputLaptop.getChildren().addAll(tfName,tfImg,tfPrice,tfCompany,btnAdd);
         root.getChildren().addAll(btnSearch,headerBox,inputLaptop, laptopRoot);
         renderLaps(laptopRoot,  connection);
@@ -199,6 +198,19 @@ public class Main extends Application {
 
 
 
+    void beforeUpdate(int id){
+        Laptop a = connection.getLaps(13);
+
+        tfName.setText(a.getName());
+        tfImg.setText(a.getImg());
+        tfPrice.setText(String.valueOf(a.getPrice()));
+        tfCompany.setText(a.getCompany());
+    }
+    void update(int id){
+        String sql = "UPDATE `laptops` SET `name`='"+ tfName.getText()+"',`price`="+ tfPrice.getText()+",`img`='"+ tfImg.getText()+"',`company`='"+ tfCompany.getText()+"' WHERE id ="+id;
+        System.out.println(sql);
+        connection.querryDB(sql);
+    }
 
 
 
@@ -241,11 +253,14 @@ public class Main extends Application {
                     btnUpdate.setText("ok");
                     System.out.println(toggle);
                     toggle = laptopList.get(index).getId();
+                    beforeUpdate(laptopList.get(index).getId());
                 } else if(toggle == laptopList.get(index).getId()) {
                     btnUpdate.setText("Update");
 
                     System.out.println(toggle);
                     toggle = 0;
+                    update(laptopList.get(index).getId());
+                    renderLaps(root, connection);
                 }
 
 

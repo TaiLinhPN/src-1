@@ -48,6 +48,36 @@ public class DBConn {
 
     }
 
+    public  Laptop getLaps(int idLap){
+        Laptop laptop = new Laptop();
+
+        try {
+
+            ResultSet resul = connection.prepareStatement("SELECT * FROM `laptops` where id =" + idLap).executeQuery();
+            while (resul.next()) {
+                int id = resul.getInt("id");
+                String name = resul.getString("name");
+                String img = resul.getString("img");
+                String company = resul.getString("company");
+                float price = resul.getFloat("price");
+
+
+                laptop.setId(id);
+                laptop.setName(name);
+                laptop.setImg(img);
+                laptop.setCompany(company);
+                laptop.setPrice(price );
+
+
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+
+        return laptop;
+
+    }
+
 
     public List<Company> getCompanys(){
         ArrayList<Company> company = new ArrayList<>();

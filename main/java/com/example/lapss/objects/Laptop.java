@@ -16,6 +16,10 @@ public class Laptop {
 
     }
 
+    public Laptop() {
+
+
+    }
 
     public int getId() {
         return id;
