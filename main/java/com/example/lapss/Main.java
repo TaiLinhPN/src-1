@@ -20,82 +20,35 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-//import jdk.internal.icu.impl.CharacterIteratorWrapper;
-
-//
-//public class Main extends Application {
-//    @Override
-////    public void start(Stage stage) throws IOException {
-////        new DBConn();
-////        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("hello-view.fxml"));
-////        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-////        stage.setTitle("Hello!");
-////        stage.setScene(scene);
-////        stage.show();
-////
-////    }
-//    public void start(Stage primaryStage) throws Exception {
-//
-//        DBConn conn = new DBConn();
-//        conn.getCompanys();
-////        conn.querryDB("DELETE  FROM `companys` WHERE id = "+2);
-//
-//        HandleLaptop lap  = new HandleLaptop();
-//
-//        lap.getLaps();
-//        lap.updateLaptop("aces","anh2","aces", 22222, 1);
-
-//        lap.createLaps("dell2221", "adasasdasd", "dell", 21111);
-
-
-//       FlowPane root = new FlowPane();
-//       root.setPadding(new Insets(15,15,15,15));
-//
-//        // Button 1
-//        Button button1= new Button("Button1");
-//        root.getChildren().add(button1);
-//
-//
-//        // Button 2
-//        Button button2 = new Button("Button2");
-//        button2.setPrefSize(100, 100);
-//        root.getChildren().add(button2);
-//
-//
-//
-//
-//       Scene scene = new Scene(root, 550, 250);
-//
-//       primaryStage.setTitle("Laptop Store");
-//       primaryStage.setScene(scene);
-//       primaryStage.show();
-//    }
-//
-//    void aaaa(){
-//      }
-
 public class Main extends Application {
 
     TableView<Laptop> table;
     int toggle = 0;
     boolean toggleMethod = false;
+    boolean toggleSearch = false;
+    boolean stateSearch = false;
+    boolean toggleInput = false;
     TextField tfName = new TextField();
     TextField tfImg = new TextField();
     TextField tfPrice = new TextField();
+    TextField tfPrice2 = new TextField();
     TextField tfCompany = new TextField();
     DBConn connection = new DBConn();
     VBox emptyStage = new VBox();
+    HBox emptyStageChildren = new HBox();
+    VBox inputBox = new VBox();
     VBox inputLaptop = new VBox();
 
 
     @Override
     public void start(Stage stage) throws IOException {
 
-        VBox root = new VBox();
+        HBox root = new HBox();
         VBox laptopRoot = new VBox();
         VBox methodBox = new VBox();
         HBox btnsMethodBox = new HBox();
-
+        VBox siteBar = new VBox();
+        VBox content = new VBox();
 
 
         HBox headerBox = new HBox();
@@ -114,6 +67,7 @@ public class Main extends Application {
             public void handle(ActionEvent actionEvent) {
                 System.out.println("aaaaaaa");
 
+
                 String sql = "INSERT INTO `laptops`(`name`, `img`, `price`,`company`) VALUES ('"+ tfName.getText()+"','"+ tfImg.getText()+"',"+ tfPrice.getText()+",'" + tfCompany.getText()+"')";
                 connection.querryDB(sql);
 
@@ -121,15 +75,54 @@ public class Main extends Application {
             }
         });
 
-        Button btnStopSearch = new Button("Stop search");
-        btnStopSearch.setOnAction(new EventHandler<ActionEvent>() {
+        Button btnSearchName = new Button("search by name");
+        btnSearchName.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
+                if(stateSearch){
 
-                root.getChildren().remove(btnStopSearch);
-                displayLaps(laptopRoot,getAlldata());
+                    String proviso = tfName.getText();
+                    displayLaps(laptopRoot, searchName(proviso));
+                }else {
+                    stateSearch = true;
+                    emptyStageChildren.getChildren().clear();
+                    emptyStageChildren.getChildren().add(btnSearchName);
+                    inputBox.getChildren().addAll(tfName);
+                }
+            }
+        });
 
+        Button btnSearchCompany = new Button("search by Company");
+        btnSearchCompany.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if(stateSearch){
+                    String proviso = tfCompany.getText();
+                    displayLaps(laptopRoot, searchCompany(proviso));
+                }else {
+                    emptyStageChildren.getChildren().clear();
+                    emptyStageChildren.getChildren().add(btnSearchCompany);
+                    stateSearch = true;
+                    inputBox.getChildren().addAll(tfCompany);
+                }
+            }
+        });
 
+        Button btnSearchPrice = new Button("search by price");
+        btnSearchPrice.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if(stateSearch){
+                    float price = Float.parseFloat(tfPrice.getText());
+                    float price2 = Float.parseFloat(tfPrice2.getText());
+
+                    displayLaps(laptopRoot,searchPrice(price,price2));
+                }else {
+                    emptyStageChildren.getChildren().clear();
+                    emptyStageChildren.getChildren().add(btnSearchPrice);
+                    stateSearch = true;
+                    inputBox.getChildren().addAll(tfPrice,tfPrice2);
+                }
             }
         });
 
@@ -137,84 +130,129 @@ public class Main extends Application {
         btnSearch.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
+                if(!toggleSearch){
+                    btnSearch.setText("stop search");
+                    toggleSearch = true;
+                    emptyStageChildren.getChildren().addAll(btnSearchName,btnSearchCompany,btnSearchPrice);
+                    emptyStage.getChildren().addAll(emptyStageChildren,inputBox);
 
-                String proviso = tfName.getText();
+                }else {
+                    btnSearch.setText("Search product");
+                    toggleSearch = false;
+                    stateSearch = false;
 
-                displayLaps(laptopRoot, searchName(proviso));
-                if(!root.getChildren().contains(btnStopSearch)){
-                    root.getChildren().addAll(btnStopSearch);
+                    emptyStageChildren.getChildren().clear();
+                    inputBox.getChildren().clear();
+                    emptyStage.getChildren().removeAll(emptyStageChildren,inputBox);
 
+                    displayLaps(laptopRoot,getAlldata());
                 }
-
-
             }
         });
 
-        Button btnOpenMetherdBox = new Button("Open Metherd Box");
-        btnOpenMetherdBox.setOnAction(new EventHandler<ActionEvent>() {
+        Button btnInput = new Button("Input product");
+        btnInput.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-
-                if(toggleMethod){
-                    toggleMethod = false ;
-                    btnOpenMetherdBox.setText("Open Metherd Box");
-                    methodBox.getChildren().removeAll(btnsMethodBox,inputLaptop);
+                if(!toggleInput){
+                    btnInput.setText("Stop Input");
+                    toggleInput = true;
 
 
-                    emptyStage.getChildren().remove(methodBox);
-                } else {
-                    toggleMethod = true;
-                    btnOpenMetherdBox.setText("Close");
-                    methodBox.getChildren().addAll(btnsMethodBox,inputLaptop);
+                    inputBox.getChildren().addAll(tfName,tfImg,tfPrice,tfCompany);
 
+                    emptyStageChildren.getChildren().addAll(btnAdd);
+                    emptyStage.getChildren().addAll(emptyStageChildren,inputBox);
 
-                    emptyStage.getChildren().addAll(methodBox);
+                }else {
+                    btnInput.setText("Input product");
+                    toggleInput = false;
 
+                    emptyStageChildren.getChildren().clear();
+                    inputBox.getChildren().clear();
+                    emptyStage.getChildren().removeAll(emptyStageChildren,inputBox);
+
+                    displayLaps(laptopRoot,getAlldata());
                 }
             }
         });
-
+//        Button btnOpenMetherdBox = new Button("Open Metherd Box");
+//        btnOpenMetherdBox.setOnAction(new EventHandler<ActionEvent>() {
+//            @Override
+//            public void handle(ActionEvent actionEvent) {
 //
-//        TableColumn<Laptop, Integer> idColumn = new TableColumn<>("ID");
-//        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+//                if(toggleMethod){
+//                    toggleMethod = false ;
+//                    btnOpenMetherdBox.setText("Open Metherd Box");
 //
-//        TableColumn<Laptop, String> nameColumn = new TableColumn<>("Name");
-//        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 //
-//        TableColumn<Laptop, String> emailColumn = new TableColumn<>("Image");
-//        emailColumn.setCellValueFactory(new PropertyValueFactory<>("img"));
-
-//        TableColumn<Laptop, Float> priceColumn = new TableColumn<>("Price");
-//        priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
-
-//        TableColumn<Laptop, String> companyColumn = new TableColumn<>("Company");
-//        companyColumn.setCellValueFactory(new PropertyValueFactory<>("company"));
-
-//        table = new TableView<>();
-//        table.getColumns().addAll(idColumn,nameColumn,emailColumn);
+//                    methodBox.getChildren().removeAll(btnsMethodBox,emptyStageChildren);
+//                    emptyStage.getChildren().removeAll(methodBox);
+//                    inputBox.getChildren().removeAll(tfName);
+//                    emptyStageChildren.getChildren().removeAll(btnSearchName,btnSearchCompany);
 //
-//        table.setItems(getLaptos());
-
-//        public ObservableList<Laptop> getLaptos(){
-//            ObservableList<Laptop> laps = FXCollections.observableArrayList();
-//            laps.add(new Laptop(1,222,"dell2","https://anphat.com.vn/media/product/38186_laptop_dell_latitude_3420_42lt342001_111.png","q"));
-//            laps.add(new Laptop(2,222,"dell3","https://www.laptopvip.vn/images/companies/1/Laptop-Dell-1.jpg?1636257311235","q"));
-//            laps.add(new Laptop(3,333,"dell5","https://anphat.com.vn/media/product/38186_laptop_dell_latitude_3420_42lt342001_111.png","q"));
+//                    if(toggleSearch){
+//                        toggleSearch = false;
+//                        btnSearch.setText("Search product");
+//                    }
+//                    stateSearch = false;
 //
-//            return laps;
-//        }
+//
+//
+//                    emptyStage.getChildren().remove(methodBox);
+//                } else {
+//                    toggleMethod = true;
+//                    btnOpenMetherdBox.setText("Close");
+//                    methodBox.getChildren().addAll(btnsMethodBox,emptyStageChildren);
+//
+//
+//                    emptyStage.getChildren().addAll(methodBox);
+//
+//                }
+//            }
+//        });
 
-        btnsMethodBox.getChildren().addAll(btnSearch,btnAdd);
+//                Button btnOpenMetherdBox = new Button("Open Metherd Box");
+//        btnOpenMetherdBox.setOnAction(new EventHandler<ActionEvent>() {
+//            @Override
+//            public void handle(ActionEvent actionEvent) {
+//
+//                if(toggleMethod){
+//                    toggleMethod = false ;
+//                    btnOpenMetherdBox.setText("Open Metherd Box");
+//
+//
+//                } else {
+//                    toggleMethod = true;
+//                    btnOpenMetherdBox.setText("Close");
+//
+//
+//                }
+//            }
+//        });
+
+
+        btnsMethodBox.getChildren().addAll(btnSearch,btnInput);
         inputLaptop.getChildren().addAll(tfName,tfImg,tfPrice,tfCompany);
 
-        root.getChildren().addAll(btnOpenMetherdBox,emptyStage,headerBox, laptopRoot);
+        siteBar.getChildren().addAll(btnsMethodBox,emptyStage);
+        content.getChildren().addAll(headerBox, laptopRoot);
+
+        root.getChildren().addAll(siteBar,content);
         getData(laptopRoot,  connection);
 
-
-        Scene scene = new Scene(root, 600, 400);
+        siteBar.setMinWidth(300);
+        siteBar.setStyle("-fx-background-color: #30353a;");
+        Scene scene = new Scene(root, 1200, 600);
         stage.setTitle("Laptop Store");
         stage.setScene(scene);
         stage.show();
+
+        System.out.println(inputBox);
+        System.out.println(emptyStageChildren);
+        // parent = VBox@64461e45
+
+
     }
     void beforeUpdate(int id){
         Laptop a = connection.getLaps(id);
@@ -223,6 +261,8 @@ public class Main extends Application {
         tfImg.setText(a.getImg());
         tfPrice.setText(String.valueOf(a.getPrice()));
         tfCompany.setText(a.getCompany());
+
+
     }
     void update(int id){
         String sql = "UPDATE `laptops` SET `name`='"+ tfName.getText()+"',`price`="+ tfPrice.getText()+",`img`='"+ tfImg.getText()+"',`company`='"+ tfCompany.getText()+"' WHERE id ="+id;
@@ -236,7 +276,7 @@ public class Main extends Application {
             HBox laptopstBox = new HBox();
             Label lbId = new Label("" + laptopList.get(index).getId());
             Label lbName = new Label(laptopList.get(index).getName());
-            Label lbImg = new Label("" + laptopList.get(index).getImg());
+//            Label lbImg = new Label("" + laptopList.get(index).getImg());
 
             Image image = new Image("" + laptopList.get(index).getImg());
             ImageView imageView = new ImageView(image);
@@ -273,9 +313,12 @@ public class Main extends Application {
             });
 
             laptopstBox.setSpacing(42);
-            laptopstBox.getChildren().addAll(lbId, lbName, lbImg,imageView, lbPrice,lbCompany, btnDelete, btnUpdate);
+            laptopstBox.getChildren().addAll(lbId, lbName,imageView, lbPrice,lbCompany, btnDelete, btnUpdate);
             root.getChildren().add(laptopstBox);
         }
+
+
+
     }
 
     // display(list)
@@ -293,7 +336,6 @@ public class Main extends Application {
         }
         return  laptops;
     }
-
     private List<Laptop> searchCompany(String company){
         List<Laptop> laptopList = connection.getLaps();
         ArrayList<Laptop> laptops = new ArrayList<> ();
@@ -305,66 +347,22 @@ public class Main extends Application {
         }
         return  laptops;
     }
-
     private List<Laptop> searchPrice(float x, float y){
         List<Laptop> laptopList = connection.getLaps();
         ArrayList<Laptop> laptops = new ArrayList<> ();
 
         for (int i = 0; i < laptopList.size(); i++) {
-            if(laptopList.get(i).getPrice() >= x && laptopList.get(i).getPrice() <= x ){
+            if(laptopList.get(i).getPrice() >= x && laptopList.get(i).getPrice() <= y ){
                 laptops.add(laptopList.get(i));
             }
         }
         return  laptops;
     }
-
-    void displayLaps(DBConn connection, VBox root, List<Laptop> laptopList, String key) { // dùng để tìm product theo tên(dùng đa hình mà đa hình cùi bắp :v)
-        root.getChildren().clear();
-        for (int i = 0; i < laptopList.size(); i++) {
-
-            int index = i;
-            System.out.println(laptopList.get(index).getName());
-            System.out.println(key);
-            System.out.println(""+laptopList.get(index).getName().equals(key));
-
-            String name = ""+laptopList.get(index).getName();
-
-            if(name.equals(key)){
-                HBox laptopstBox = new HBox();
-                Label lbId = new Label("" + laptopList.get(index).getId());
-                Label lbName = new Label(laptopList.get(index).getName());
-                Label lbImg = new Label("" + laptopList.get(index).getImg());
-
-                Image image = new Image("" + laptopList.get(index).getImg());
-                ImageView imageView = new ImageView(image);
-                imageView.setFitWidth(220);
-                imageView.setPreserveRatio(true);
-                Label lbCompany= new Label("" + laptopList.get(index).getCompany());
-
-                Label lbPrice = new Label("" + laptopList.get(index).getPrice());
-                Button btnDelete = new Button("Delete");
-
-                btnDelete.setOnAction(actionEvent -> {
-                    System.out.println("Click delete " + laptopList.get(index).getId());
-
-                    connection.querryDB("DELETE  FROM `laptops` WHERE id = " + laptopList.get(index).getId());
-                    getData(root, connection);
-                });
-
-                laptopstBox.setSpacing(42);
-                laptopstBox.getChildren().addAll(lbId, lbName, lbImg,imageView, lbPrice,lbCompany, btnDelete);
-                root.getChildren().add(laptopstBox);
-            }
-
-        }
-    }
-
     public List<Laptop> getdatatata(String sql){
         List<Laptop> data = null;
         data = connection.getdatabase(sql);
         return data;
     }
-
     public List<Laptop> getAlldata(){
         List<Laptop> data = null;
         String sql = "SELECT * FROM `laptops`";
@@ -376,11 +374,7 @@ public class Main extends Application {
         List<Laptop> products = getdatatata(sql);
         displayLaps( root, products);
     }
-    private void getData(VBox root, DBConn connection, String proviso){
-        List<Laptop> products = connection.getLaps();
-        displayLaps(connection, root, products, proviso);
-        System.out.println(proviso);
-    }
+
     public static void main(String[] args) {
         launch();
     }
