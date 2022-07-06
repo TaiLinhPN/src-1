@@ -22,7 +22,7 @@ import java.util.List;
 
 public class Main extends Application {
 
-    TableView<Laptop> table;
+
     int toggle = 0;
     boolean toggleMethod = false;
     boolean toggleSearch = false;
@@ -42,6 +42,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        ScrollPane scrollPane = new ScrollPane();
 
         HBox root = new HBox();
         VBox laptopRoot = new VBox();
@@ -60,14 +61,25 @@ public class Main extends Application {
         headerBox.getChildren().addAll(nameHead,imageHead,priceHead,companyNameHead);
         headerBox.setSpacing(42);
 
+        Button btnNav = new Button("Homepage");
+        btnNav.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+
+
+
+                String sql = "INSERT INTO `laptops`(`name`, `img`, `price`,`company`) VALUES ('"+ tfName.getText()+"','"+ tfImg.getText()+"',"+ tfPrice.getText()+",'" + tfCompany.getText()+"')";
+                connection.querryDB(sql);
+
+                displayLaps(laptopRoot, getAlldata());
+            }
+        });
+
 
         Button btnAdd = new Button("Add product");
         btnAdd.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                System.out.println("aaaaaaa");
-
-
                 String sql = "INSERT INTO `laptops`(`name`, `img`, `price`,`company`) VALUES ('"+ tfName.getText()+"','"+ tfImg.getText()+"',"+ tfPrice.getText()+",'" + tfCompany.getText()+"')";
                 connection.querryDB(sql);
 
@@ -242,8 +254,12 @@ public class Main extends Application {
         getData(laptopRoot,  connection);
 
         siteBar.setMinWidth(300);
-        siteBar.setStyle("-fx-background-color: #30353a;");
-        Scene scene = new Scene(root, 1200, 600);
+//        siteBar.setStyle("-fx-background-color: #30353a;");
+        scrollPane.setContent(root);
+
+        Scene scene = new Scene(scrollPane, 1200, 600);
+        scene.getStylesheets().add("style.css");
+
         stage.setTitle("Laptop Store");
         stage.setScene(scene);
         stage.show();
@@ -321,6 +337,47 @@ public class Main extends Application {
 
     }
 
+    void displayLapsCard( VBox root, List<Laptop> laptopList) {
+        root.getChildren().clear();
+        for (int i = 0; i < laptopList.size(); i++) {
+            int index = i;
+            VBox laptopstBox = new VBox();
+
+            Image image = new Image("" + laptopList.get(index).getImg());
+            ImageView imageView = new ImageView(image);
+            imageView.setFitWidth(220);
+            imageView.setPreserveRatio(true);
+
+            Label lbName = new Label( laptopList.get(index).getName());
+            Label lbPrice = new Label("Price: " + laptopList.get(index).getPrice());
+
+            Button btnAddToCard = new Button("Add to cast");
+            btnAddToCard.setOnAction(actionEvent -> {
+                System.out.println("Click delete " + laptopList.get(index).getId());
+                toggle = 0;
+                connection.querryDB("DELETE  FROM `laptops` WHERE id = " + laptopList.get(index).getId());
+//                displayLapsCard(root,getAlldata());
+            });
+            Button btnDetail = new Button("Detail");
+            btnDetail.setOnAction(actionEvent -> {
+                System.out.println("Click delete " + laptopList.get(index).getId());
+                toggle = 0;
+                connection.querryDB("DELETE  FROM `laptops` WHERE id = " + laptopList.get(index).getId());
+//                displayLapsCard(root,getAlldata());
+            });
+
+            HBox Btns = new HBox(btnDetail,btnAddToCard);
+            laptopstBox.getChildren().addAll(imageView, lbName, lbPrice, Btns);
+            laptopstBox.setSpacing(10);
+            Btns.setSpacing(10);
+            laptopstBox.setStyle("-fx-border-color: blue;");
+
+            root.getChildren().add(laptopstBox);
+        }
+
+
+
+    }
     // display(list)
     // getData() return data;
     // search(keyword) return data;
@@ -373,6 +430,7 @@ public class Main extends Application {
         String sql = "SELECT * FROM `laptops`";
         List<Laptop> products = getdatatata(sql);
         displayLaps( root, products);
+        displayLapsCard(root, products);
     }
 
     public static void main(String[] args) {
