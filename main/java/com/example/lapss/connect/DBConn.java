@@ -1,6 +1,7 @@
 package com.example.lapss.connect;
 
 //import com.almasb.fxgl.net.Connection;
+import com.example.lapss.objects.Cart;
 import com.example.lapss.objects.Company;
 import com.example.lapss.objects.Laptop;
 
@@ -35,9 +36,6 @@ public class DBConn {
                 String img = resul.getString("img");
                 String company = resul.getString("company");
                 float price = resul.getFloat("price");
-//                System.out.println(id);
-//                System.out.println(name);
-
                 laptop.add(new Laptop(id , price,name,img,company));
             }
         }catch (SQLException e){
@@ -47,6 +45,26 @@ public class DBConn {
         return laptop;
 
     }
+
+    public List<Cart> getCart(){
+        ArrayList<Cart> cartList = new ArrayList<>();
+        try {
+            ResultSet resul = connection.prepareStatement("SELECT * FROM `cart`").executeQuery();
+            while (resul.next()){
+                int idUser = resul.getInt("id_user");
+                int idProduct = resul.getInt("id_product");
+
+                cartList.add(new Cart(idUser , idProduct));
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+
+        return cartList;
+
+    }
+
+
 
     public  Laptop getLaps(int idLap){
         Laptop laptop = new Laptop();
@@ -120,6 +138,8 @@ public class DBConn {
         return laptop;
 
     }
+
+
 
 
     public void querryDB(String sql){

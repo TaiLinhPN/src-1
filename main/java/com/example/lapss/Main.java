@@ -1,11 +1,16 @@
 package com.example.lapss;
 
 import com.example.lapss.connect.DBConn;
+import com.example.lapss.objects.Cart;
 import com.example.lapss.objects.Laptop;
 import javafx.application.Application;
+import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 
@@ -28,6 +33,8 @@ public class Main extends Application {
     boolean toggleSearch = false;
     boolean stateSearch = false;
     boolean toggleInput = false;
+    boolean toggleNav = false;
+    boolean toggleCart = false;
     TextField tfName = new TextField();
     TextField tfImg = new TextField();
     TextField tfPrice = new TextField();
@@ -40,12 +47,15 @@ public class Main extends Application {
     VBox inputLaptop = new VBox();
 
 
+
+    int IdUser = 1;
+
     @Override
     public void start(Stage stage) throws IOException {
         ScrollPane scrollPane = new ScrollPane();
 
-        HBox root = new HBox();
-        VBox laptopRoot = new VBox();
+        FlowPane root = new FlowPane(Orientation. HORIZONTAL);
+        FlowPane laptopRoot = new FlowPane(Orientation. HORIZONTAL);
         VBox methodBox = new VBox();
         HBox btnsMethodBox = new HBox();
         VBox siteBar = new VBox();
@@ -61,17 +71,39 @@ public class Main extends Application {
         headerBox.getChildren().addAll(nameHead,imageHead,priceHead,companyNameHead);
         headerBox.setSpacing(42);
 
+
         Button btnNav = new Button("Homepage");
         btnNav.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
+                if(toggleNav){
+                    btnNav.setText("Admin page");
+                    toggleNav = false;
+                    displayLaps(laptopRoot, getAlldata());
+                }else {
+                    btnNav.setText("Homepage");
+                    toggleNav = true;
+                    displayLapsCard(laptopRoot, getAlldata());
+                }
 
+            }
+        });
+        Button btnCart = new Button("Cart");
+        btnCart.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if(toggleCart){
+                    btnCart.setText("Cart");
+                    toggleCart = false;
+                    displayLapsCard(laptopRoot, getAlldata());
+                }else {
 
+                    btnCart.setText("Close Cart");
+                    toggleCart = true;
+                    System.out.println("xxxxx");
+                    displayCart(laptopRoot, getLapsInCart(IdUser));
+                }
 
-                String sql = "INSERT INTO `laptops`(`name`, `img`, `price`,`company`) VALUES ('"+ tfName.getText()+"','"+ tfImg.getText()+"',"+ tfPrice.getText()+",'" + tfCompany.getText()+"')";
-                connection.querryDB(sql);
-
-                displayLaps(laptopRoot, getAlldata());
             }
         });
 
@@ -250,15 +282,15 @@ public class Main extends Application {
         siteBar.getChildren().addAll(btnsMethodBox,emptyStage);
         content.getChildren().addAll(headerBox, laptopRoot);
 
-        root.getChildren().addAll(siteBar,content);
-        getData(laptopRoot,  connection);
+        root.getChildren().addAll( btnNav,btnCart, siteBar,content);
+
+        startProgram(laptopRoot,  connection);
 
         siteBar.setMinWidth(300);
 //        siteBar.setStyle("-fx-background-color: #30353a;");
         scrollPane.setContent(root);
 
         Scene scene = new Scene(scrollPane, 1200, 600);
-        scene.getStylesheets().add("style.css");
 
         stage.setTitle("Laptop Store");
         stage.setScene(scene);
@@ -285,7 +317,7 @@ public class Main extends Application {
         System.out.println(sql);
         connection.querryDB(sql);
     }
-    void displayLaps( VBox root, List<Laptop> laptopList) {
+    void displayLaps( FlowPane root, List<Laptop> laptopList) {
         root.getChildren().clear();
         for (int i = 0; i < laptopList.size(); i++) {
             int index = i;
@@ -331,14 +363,44 @@ public class Main extends Application {
             laptopstBox.setSpacing(42);
             laptopstBox.getChildren().addAll(lbId, lbName,imageView, lbPrice,lbCompany, btnDelete, btnUpdate);
             root.getChildren().add(laptopstBox);
+
         }
-
-
-
     }
 
-    void displayLapsCard( VBox root, List<Laptop> laptopList) {
+    void displayCart( FlowPane root, List<Laptop> laptopList) {
         root.getChildren().clear();
+        for (int i = 0; i < laptopList.size(); i++) {
+            int index = i;
+            HBox laptopstBox = new HBox();
+            Label lbId = new Label("" + laptopList.get(index).getId());
+            Label lbName = new Label(laptopList.get(index).getName());
+//            Label lbImg = new Label("" + laptopList.get(index).getImg());
+
+            Image image = new Image("" + laptopList.get(index).getImg());
+            ImageView imageView = new ImageView(image);
+            imageView.setFitWidth(220);
+            imageView.setPreserveRatio(true);
+            Label lbPrice = new Label("" + laptopList.get(index).getPrice());
+            Label lbCompany= new Label("" + laptopList.get(index).getCompany());
+
+            Button btnDelete = new Button("Delete");
+            btnDelete.setOnAction(actionEvent -> {
+                System.out.println("Click delete " + laptopList.get(index).getId());
+                toggle = 0;
+                connection.querryDB("DELETE  FROM `cart` WHERE id_product = " + laptopList.get(index).getId());
+                displayCart(root, getLapsInCart(IdUser));
+            });
+
+
+            laptopstBox.setSpacing(42);
+            laptopstBox.getChildren().addAll(lbId, lbName,imageView, lbPrice,lbCompany, btnDelete);
+            root.getChildren().add(laptopstBox);
+
+        }
+    }
+    void displayLapsCard( FlowPane root, List<Laptop> laptopList) {
+        root.getChildren().clear();
+
         for (int i = 0; i < laptopList.size(); i++) {
             int index = i;
             VBox laptopstBox = new VBox();
@@ -353,27 +415,57 @@ public class Main extends Application {
 
             Button btnAddToCard = new Button("Add to cast");
             btnAddToCard.setOnAction(actionEvent -> {
-                System.out.println("Click delete " + laptopList.get(index).getId());
-                toggle = 0;
-                connection.querryDB("DELETE  FROM `laptops` WHERE id = " + laptopList.get(index).getId());
-//                displayLapsCard(root,getAlldata());
+                connection.querryDB("INSERT INTO `cart`(`id_user`, `id_product`) VALUES ("+IdUser+","+laptopList.get(index).getId()+")");
+                btnAddToCard.setText("added");
+
             });
             Button btnDetail = new Button("Detail");
             btnDetail.setOnAction(actionEvent -> {
-                System.out.println("Click delete " + laptopList.get(index).getId());
-                toggle = 0;
-                connection.querryDB("DELETE  FROM `laptops` WHERE id = " + laptopList.get(index).getId());
-//                displayLapsCard(root,getAlldata());
+                detail(root,connection.getLaps(laptopList.get(index).getId()));
             });
 
             HBox Btns = new HBox(btnDetail,btnAddToCard);
             laptopstBox.getChildren().addAll(imageView, lbName, lbPrice, Btns);
             laptopstBox.setSpacing(10);
+
             Btns.setSpacing(10);
             laptopstBox.setStyle("-fx-border-color: blue;");
 
             root.getChildren().add(laptopstBox);
+            root.setMinWidth(800);
+
         }
+    }
+    void detail( FlowPane root, Laptop laptop) {
+        root.getChildren().clear();
+
+        HBox laptopstBox = new HBox();
+
+        Image image = new Image("" + laptop.getImg());
+        ImageView imageView = new ImageView(image);
+        imageView.setFitWidth(620);
+        imageView.setPreserveRatio(true);
+
+        Label lbName = new Label( laptop.getName());
+        Label lbCompany = new Label( "Company: " +laptop.getCompany());
+        Label lbPrice = new Label("Price: " + laptop.getPrice());
+
+        Button btnAddToCard = new Button("Add to cast");
+        btnAddToCard.setOnAction(actionEvent -> {
+            System.out.println("Click delete " + laptop.getId());
+            toggle = 0;
+            connection.querryDB("DELETE  FROM `laptops` WHERE id = " + laptop.getId());
+
+        });
+
+
+        VBox ìnforBox = new VBox(lbName,lbCompany, lbPrice,btnAddToCard);
+        laptopstBox.getChildren().addAll(imageView, ìnforBox );
+        laptopstBox.setSpacing(10);
+
+        root.getChildren().add(laptopstBox);
+        root.setMinWidth(800);
+
 
 
 
@@ -383,26 +475,14 @@ public class Main extends Application {
     // search(keyword) return data;
 
     private List<Laptop> searchName(String name){
-        List<Laptop> laptopList = connection.getLaps();
-        ArrayList<Laptop> laptops = new ArrayList<> ();
-
-        for (int i = 0; i < laptopList.size(); i++) {
-            if(laptopList.get(i).getName().equals(name)){
-                laptops.add(laptopList.get(i));
-            }
-        }
-        return  laptops;
+        String sql = "SELECT * FROM `laptops` WHERE name LIKE '%"+name+"%'";
+        List<Laptop> laptopList = getdatatata(sql);
+        return  laptopList;
     }
     private List<Laptop> searchCompany(String company){
-        List<Laptop> laptopList = connection.getLaps();
-        ArrayList<Laptop> laptops = new ArrayList<> ();
-
-        for (int i = 0; i < laptopList.size(); i++) {
-            if(laptopList.get(i).getCompany().equals(company)){
-                laptops.add(laptopList.get(i));
-            }
-        }
-        return  laptops;
+        String sql = "SELECT * FROM `laptops` WHERE company LIKE '%"+company+"%'";
+        List<Laptop> laptopList = getdatatata(sql);
+        return  laptopList;
     }
     private List<Laptop> searchPrice(float x, float y){
         List<Laptop> laptopList = connection.getLaps();
@@ -411,6 +491,24 @@ public class Main extends Application {
         for (int i = 0; i < laptopList.size(); i++) {
             if(laptopList.get(i).getPrice() >= x && laptopList.get(i).getPrice() <= y ){
                 laptops.add(laptopList.get(i));
+            }
+        }
+        return  laptops;
+    }
+
+    private List<Laptop> getLapsInCart(int id){
+        List<Cart> cartList = getAllCart();
+        ArrayList<Laptop> laptops = new ArrayList<> ();
+
+        System.out.println(id);
+
+        for (int i = 0; i < cartList.size(); i++) {
+            System.out.println(cartList.get(i).getIdUer());
+
+            if(cartList.get(i).getIdUer() == id ){
+
+                System.out.println(cartList.get(i).getIdProduct());
+                laptops.add(connection.getLaps(cartList.get(i).getIdProduct()));
             }
         }
         return  laptops;
@@ -426,11 +524,15 @@ public class Main extends Application {
         data = connection.getdatabase(sql);
         return data;
     }
-    private void getData(VBox root, DBConn connection){
-        String sql = "SELECT * FROM `laptops`";
-        List<Laptop> products = getdatatata(sql);
+
+    public List<Cart> getAllCart(){
+        List<Cart> data = null;
+        data = connection.getCart();
+        return data;
+    }
+    private void startProgram(FlowPane root, DBConn connection){
+        List<Laptop> products = getAlldata();
         displayLaps( root, products);
-        displayLapsCard(root, products);
     }
 
     public static void main(String[] args) {
