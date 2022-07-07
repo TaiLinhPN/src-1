@@ -11,7 +11,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.scene.control.Alert.AlertType;
+
 
 
 import javafx.event.ActionEvent;
@@ -52,10 +55,12 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        Color c = Color.rgb(174,174,255);
+        Alert alert = new Alert(AlertType.NONE);
         ScrollPane scrollPane = new ScrollPane();
 
-        FlowPane root = new FlowPane(Orientation. HORIZONTAL);
-        FlowPane laptopRoot = new FlowPane(Orientation. HORIZONTAL);
+        FlowPane root = new FlowPane(Orientation.VERTICAL );
+        FlowPane laptopRoot = new FlowPane(Orientation.HORIZONTAL);
         VBox methodBox = new VBox();
         HBox btnsMethodBox = new HBox();
         VBox siteBar = new VBox();
@@ -63,13 +68,24 @@ public class Main extends Application {
 
 
         HBox headerBox = new HBox();
+        Label nameId = new Label("Id" );
         Label nameHead = new Label("Name" );
         Label imageHead = new Label("Image" );
         Label priceHead = new Label("Price" );
         Label companyNameHead = new Label("Company" );
+        Label handdelHead = new Label("Handle" );
 
-        headerBox.getChildren().addAll(nameHead,imageHead,priceHead,companyNameHead);
-        headerBox.setSpacing(42);
+        nameId.setMinWidth(55);
+        nameHead.setMinWidth(145);
+        imageHead.setMinWidth(260);
+        priceHead.setMinWidth(140);
+        companyNameHead.setMinWidth(100);
+        companyNameHead.setMinWidth(195);
+        handdelHead.setMinWidth(100);
+
+        headerBox.getChildren().addAll(nameId,nameHead,imageHead,priceHead,companyNameHead,handdelHead);
+        headerBox.setStyle("-fx-background-color: #AEAEFFFF;");
+        headerBox.setMinHeight(30);
 
 
         Button btnNav = new Button("Homepage");
@@ -77,11 +93,11 @@ public class Main extends Application {
             @Override
             public void handle(ActionEvent actionEvent) {
                 if(toggleNav){
-                    btnNav.setText("Admin page");
+                    btnNav.setText("Go Homepage");
                     toggleNav = false;
                     displayLaps(laptopRoot, getAlldata());
                 }else {
-                    btnNav.setText("Homepage");
+                    btnNav.setText("Go Admin page");
                     toggleNav = true;
                     displayLapsCard(laptopRoot, getAlldata());
                 }
@@ -89,6 +105,7 @@ public class Main extends Application {
             }
         });
         Button btnCart = new Button("Cart");
+        btnCart.setMinWidth(75);
         btnCart.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
@@ -116,6 +133,9 @@ public class Main extends Application {
                 connection.querryDB(sql);
 
                 displayLaps(laptopRoot, getAlldata());
+                Alert alert = new Alert(AlertType.NONE,
+                        "Added success ",ButtonType.APPLY);
+                alert.show();
             }
         });
 
@@ -286,11 +306,12 @@ public class Main extends Application {
 
         startProgram(laptopRoot,  connection);
 
-        siteBar.setMinWidth(300);
+        siteBar.setMinWidth(320);
+//        siteBar.setMaxWidth(300);
 //        siteBar.setStyle("-fx-background-color: #30353a;");
         scrollPane.setContent(root);
 
-        Scene scene = new Scene(scrollPane, 1200, 600);
+        Scene scene = new Scene(scrollPane, 1250, 600);
 
         stage.setTitle("Laptop Store");
         stage.setScene(scene);
@@ -303,6 +324,10 @@ public class Main extends Application {
 
     }
     void beforeUpdate(int id){
+        Alert alert = new Alert(AlertType.WARNING,
+                "Are you sure to update?",ButtonType.APPLY);
+        alert.show();
+
         Laptop a = connection.getLaps(id);
 
         tfName.setText(a.getName());
@@ -313,6 +338,10 @@ public class Main extends Application {
 
     }
     void update(int id){
+        Alert alert = new Alert(AlertType.INFORMATION,
+                "Updated success?",ButtonType.APPLY);
+        alert.show();
+
         String sql = "UPDATE `laptops` SET `name`='"+ tfName.getText()+"',`price`="+ tfPrice.getText()+",`img`='"+ tfImg.getText()+"',`company`='"+ tfCompany.getText()+"' WHERE id ="+id;
         System.out.println(sql);
         connection.querryDB(sql);
@@ -330,11 +359,12 @@ public class Main extends Application {
             ImageView imageView = new ImageView(image);
             imageView.setFitWidth(220);
             imageView.setPreserveRatio(true);
-            Label lbPrice = new Label("" + laptopList.get(index).getPrice());
+            Label lbPrice = new Label("$" + laptopList.get(index).getPrice());
             Label lbCompany= new Label("" + laptopList.get(index).getCompany());
 
             Button btnDelete = new Button("Delete");
             btnDelete.setOnAction(actionEvent -> {
+
                 System.out.println("Click delete " + laptopList.get(index).getId());
                 toggle = 0;
                 connection.querryDB("DELETE  FROM `laptops` WHERE id = " + laptopList.get(index).getId());
@@ -363,7 +393,9 @@ public class Main extends Application {
             laptopstBox.setSpacing(42);
             laptopstBox.getChildren().addAll(lbId, lbName,imageView, lbPrice,lbCompany, btnDelete, btnUpdate);
             root.getChildren().add(laptopstBox);
-
+            lbName.setMinWidth(100);
+            lbPrice.setMinWidth(100);
+            lbCompany.setMinWidth(100);
         }
     }
 
@@ -385,6 +417,9 @@ public class Main extends Application {
 
             Button btnDelete = new Button("Delete");
             btnDelete.setOnAction(actionEvent -> {
+                Alert alert = new Alert(AlertType.WARNING,
+                        "Are you sure to Delete?",ButtonType.APPLY);
+                alert.show();
                 System.out.println("Click delete " + laptopList.get(index).getId());
                 toggle = 0;
                 connection.querryDB("DELETE  FROM `cart` WHERE id_product = " + laptopList.get(index).getId());
@@ -395,6 +430,11 @@ public class Main extends Application {
             laptopstBox.setSpacing(42);
             laptopstBox.getChildren().addAll(lbId, lbName,imageView, lbPrice,lbCompany, btnDelete);
             root.getChildren().add(laptopstBox);
+
+            lbName.setMinWidth(200);
+            lbPrice.setMinWidth(200);
+            lbCompany.setMinWidth(200);
+
 
         }
     }
@@ -452,9 +492,8 @@ public class Main extends Application {
 
         Button btnAddToCard = new Button("Add to cast");
         btnAddToCard.setOnAction(actionEvent -> {
-            System.out.println("Click delete " + laptop.getId());
-            toggle = 0;
-            connection.querryDB("DELETE  FROM `laptops` WHERE id = " + laptop.getId());
+            connection.querryDB("INSERT INTO `cart`(`id_user`, `id_product`) VALUES ("+IdUser+","+laptop.getId()+")");
+            btnAddToCard.setText("added");
 
         });
 
@@ -466,13 +505,8 @@ public class Main extends Application {
         root.getChildren().add(laptopstBox);
         root.setMinWidth(800);
 
-
-
-
     }
-    // display(list)
-    // getData() return data;
-    // search(keyword) return data;
+
 
     private List<Laptop> searchName(String name){
         String sql = "SELECT * FROM `laptops` WHERE name LIKE '%"+name+"%'";
