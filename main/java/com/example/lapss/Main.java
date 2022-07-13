@@ -240,60 +240,7 @@ public class Main extends Application {
                 }
             }
         });
-//        Button btnOpenMetherdBox = new Button("Open Metherd Box");
-//        btnOpenMetherdBox.setOnAction(new EventHandler<ActionEvent>() {
-//            @Override
-//            public void handle(ActionEvent actionEvent) {
-//
-//                if(toggleMethod){
-//                    toggleMethod = false ;
-//                    btnOpenMetherdBox.setText("Open Metherd Box");
-//
-//
-//                    methodBox.getChildren().removeAll(btnsMethodBox,emptyStageChildren);
-//                    emptyStage.getChildren().removeAll(methodBox);
-//                    inputBox.getChildren().removeAll(tfName);
-//                    emptyStageChildren.getChildren().removeAll(btnSearchName,btnSearchCompany);
-//
-//                    if(toggleSearch){
-//                        toggleSearch = false;
-//                        btnSearch.setText("Search product");
-//                    }
-//                    stateSearch = false;
-//
-//
-//
-//                    emptyStage.getChildren().remove(methodBox);
-//                } else {
-//                    toggleMethod = true;
-//                    btnOpenMetherdBox.setText("Close");
-//                    methodBox.getChildren().addAll(btnsMethodBox,emptyStageChildren);
-//
-//
-//                    emptyStage.getChildren().addAll(methodBox);
-//
-//                }
-//            }
-//        });
 
-//                Button btnOpenMetherdBox = new Button("Open Metherd Box");
-//        btnOpenMetherdBox.setOnAction(new EventHandler<ActionEvent>() {
-//            @Override
-//            public void handle(ActionEvent actionEvent) {
-//
-//                if(toggleMethod){
-//                    toggleMethod = false ;
-//                    btnOpenMetherdBox.setText("Open Metherd Box");
-//
-//
-//                } else {
-//                    toggleMethod = true;
-//                    btnOpenMetherdBox.setText("Close");
-//
-//
-//                }
-//            }
-//        });
 
 
         btnsMethodBox.getChildren().addAll(btnSearch,btnInput);
